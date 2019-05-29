@@ -1,0 +1,8 @@
+- command: mkdir /data/redis/{{port}} && mkdir -p /data/logs/redis/{{port}}
+- name: copy config
+  copy: src=master.conf dest=/data/redis/{{port}}/redis.conf
+- command: sed -i "s/6379/{{port}}/g" /data/redis/{{port}}/redis.conf
+- shell: sed -i "$ a\slaveof {{master_info}}" /data/redis/{{port}}/redis.conf
+  when: role == 'slave'
+- command: /usr/local/bin/redis-server /data/redis/{{port}}/redis.conf
+#- lineinfile: dest=/etc/rc.d/rc.local state=present line='/usr/local/bin/redis-server /data/redis/{{port}}/redis.conf'

@@ -1,0 +1,2 @@
+[redis]
+11.11.11.113  role=sentinel  port=27000  master_info='11.11.11.111 6379'

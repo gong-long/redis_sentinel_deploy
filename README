@@ -1,0 +1,55 @@
+Redis sentinel 哨兵模式 ansible 部署(版本2.8.24)
+文档地址：http://wiki.op.ksyun.com/pages/viewpage.action?pageId=100897215
+默认部署：一主两从+三哨兵 iplist
+
+
+0、手动添加中控机和 redis 节点免密钥
+
+
+
+
+
+
+# ---------------------------- 部署 ---------------------------------------
+# ------------------------- 1、单机部署 -----------------------------------
+# vim hosts
+# [redis]
+# 10.65.10.202  role="master"       port="6379"      master_info=''
+#
+# ansible-playbook -i hosts init.yml
+#
+# ------------------------- 2、多机部署 -----------------------------------
+# 修改 redis 监听端口
+# sed -i 's/6481/6379/g' iplist
+#
+# 修改 redis 密码(不修改，则为默认密码 s9z6fFbjxmHhkq39O123 )
+# sed -i 's/s9z6fFbjxmHhkq39O123/myredispasswd/g' files/{master.conf,redis,sentinel.conf,slave.conf}
+#
+# 修改 主节点 ip
+# sed -i 's/10.65.10.202/10.10.0.32/g' iplist
+#
+# 修改 从节点 ip
+# sed -i 's/10.65.10.203/10.10.0.21/g' iplist
+# sed -i 's/10.65.10.204/10.10.0.24/g' iplist
+#
+# 开始部署
+# sh deploy.sh
+
+
+
+
+
+
+
+# ------------------------- 3、运维操作 -----------------------------------
+1、宕机后，启动进程
+/etc/init.d/redis 6379 start
+/etc/init.d/redis 27000 start
+
+2、使用默认密码连接
+redis-cli  -h 10.10.0.32 -a s9z6fFbjxmHhkq39O123 -p 6379
+
+3、默认配置文件中不提供内存限制参数，需要部署完成后手动设置
+redis 适合当作类似 memcached 的缓存来使用，而不适合当做一个真实的 DB
+当把 Redis 当做一个真实的数据库使用的时候，内存使用将是一个很大的开销
+当内存达到最大限制值的时候 Redis 会选择性删除数据

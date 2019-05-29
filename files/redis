@@ -1,0 +1,59 @@
+#!/bin/bash
+
+redis_binpath="/usr/local/bin"
+port=$1
+action=$2
+redis_tag=""
+authpass="123456"
+
+function redis_start(){
+    conf_path=$1
+    redis_tag=$2
+    ${redis_binpath}/redis-server ${conf_path} ${redis_tag}
+}
+
+function redis_stop(){
+    start_port=$1
+    ${redis_binpath}/redis-cli -p ${start_port} -a ${authpass} shutdown
+
+}
+
+case $port in 
+    6379)
+        conf_path="/data/redis/6379/redis.conf"
+        ;;
+    6380)
+        conf_path="/data/redis/6380/redis.conf"
+        ;;
+    6381)
+        conf_path="/data/redis/6381/redis.conf"
+        ;;
+    6382)
+        conf_path="/data/redis/6382/redis.conf"
+        ;;
+    6481)
+        conf_path="/data/redis/6481/redis.conf"
+        ;;
+    27000)
+        conf_path="/data/redis/sentinel/sentinel-27000.conf"
+        redis_tag="--sentinel"
+        ;;
+    *)
+        echo "error port"
+        exit 1
+        ;;
+esac
+
+
+case $action in 
+    start)
+        redis_start "$conf_path" "$redis_tag"
+        ;;
+    stop)
+        redis_stop "$port"
+        ;;
+    *)
+       echo "please choose [start|stop] "
+       ;;
+esac
+

@@ -1,0 +1,26 @@
+- hosts: redis
+  gather_facts: false
+  sudo: yes
+  tasks:
+    - command: ls /usr/local/bin/redis-cli
+      register: check
+      ignore_errors: True
+    - name: copy redis
+      copy: src=redis-2.8.24.tar.gz dest=/tmp/
+      when: check|failed
+    - name: copy redis startfile
+      copy: src=redis dest=/etc/init.d/redis mode=755
+      when: check|failed
+    - command: tar zxf /tmp/redis-2.8.24.tar.gz -C /tmp
+      when: check|failed
+    - shell: chdir=/tmp/redis-2.8.24 {{ item }}
+      with_items:
+        - make  && make install
+        - mkdir /data/redis/
+        - chown -R root.root /data/redis/
+      when: check|failed
+      ignore_errors: True
+    - include: m_or_s.yml
+      when: role == 'master' or role == 'slave'
+    - include: sentinel.yml
+      when: role == 'sentinel'

@@ -1,0 +1,9 @@
+- command: mkdir /data/redis/sentinel && mkdir -p /data/logs/redis/sentinel
+- name: copy config
+  copy: src=sentinel.conf dest=/data/redis/sentinel/sentinel-{{port}}.conf
+- shell: chdir=/data/redis/sentinel/ {{ item }}
+  with_items:
+    - sed -i "s/27000/{{port}}/g" sentinel-{{port}}.conf
+    - sed -i "s/127.0.0.1 6379/{{master_info}}/g" sentinel-{{port}}.conf
+    - /usr/local/bin/redis-sentinel /data/redis/sentinel/sentinel-{{port}}.conf
+#- lineinfile: dest=/etc/rc.d/rc.local state=present line='/usr/local/bin/redis-sentinel /data/redis/sentinel/sentinel-{{port}}.conf'
